@@ -111,6 +111,9 @@ func (r *Run) Mode() Mode          { return r.mode }
 func (r *Run) Target() int         { return r.target }
 func (r *Run) Started() bool       { return !r.started.IsZero() }
 
+// Elapsed is the time since the first keystroke, or 0 before typing starts.
+func (r *Run) Elapsed() time.Duration { return r.elapsed() }
+
 // GoalReached reports whether the run's completion condition is met.
 func (r *Run) GoalReached() bool {
 	switch r.mode {

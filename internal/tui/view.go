@@ -114,11 +114,22 @@ func (m Model) footer() string {
 	var status string
 	switch m.Mode() {
 	case run.ModeTime:
-		status = fmt.Sprintf("%ds", m.Target())
+		remaining := m.Target() - int(m.run.Elapsed().Seconds())
+		if remaining < 0 {
+			remaining = 0
+		}
+		status = fmt.Sprintf("%ds", remaining)
 	case run.ModeWords:
-		status = fmt.Sprintf("%d words", m.Target())
-	default:
-		status = "zen"
+		done := 0
+		text := m.run.Text()
+		for _, ch := range text[:m.run.Cursor()] {
+			if ch == ' ' {
+				done++
+			}
+		}
+		status = fmt.Sprintf("%d/%d words", done, m.Target())
+	default: // zen
+		status = fmt.Sprintf("%ds", int(m.run.Elapsed().Seconds()))
 	}
 	return styleDim.Render("  " + status + "   ·   esc to restart")
 }

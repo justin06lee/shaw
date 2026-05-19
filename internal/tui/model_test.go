@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -104,5 +105,30 @@ func TestViewRendersWithoutPanic(t *testing.T) {
 	m = updated.(Model)
 	if m.View() == "" {
 		t.Error("active view is empty")
+	}
+}
+
+func TestFooterShowsRemainingTime(t *testing.T) {
+	m := New(fixedSource{word: "alpha"}, run.ModeTime, 30, 80, 24)
+	base := time.Unix(0, 0)
+	clock := base
+	m.Run().Now = func() time.Time { return clock }
+	updated, _ := m.Update(keyMsg("a")) // first keystroke sets run start = base
+	m = updated.(Model)
+	clock = base.Add(10 * time.Second)
+	if !strings.Contains(m.footer(), "20s") {
+		t.Errorf("footer should show 20s remaining at +10s of a 30s run, got %q", m.footer())
+	}
+}
+
+func TestFooterWordsProgress(t *testing.T) {
+	m := New(fixedSource{word: "alpha"}, run.ModeWords, 10, 80, 24)
+	// Type "alpha " — one full word plus its trailing space.
+	for _, ch := range "alpha " {
+		updated, _ := m.Update(keyMsg(string(ch)))
+		m = updated.(Model)
+	}
+	if !strings.Contains(m.footer(), "1/10 words") {
+		t.Errorf("footer should show 1/10 words after one word, got %q", m.footer())
 	}
 }

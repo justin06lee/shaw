@@ -158,8 +158,8 @@ func (m Model) handleIdleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 	case tea.KeyRunes, tea.KeySpace:
 		m.state = StateActive
-		next, _ := m.handleActiveKey(msg)
-		return next, tick()
+		next, cmd := m.handleActiveKey(msg)
+		return next, tea.Batch(cmd, tick())
 	}
 	return m, nil
 }
