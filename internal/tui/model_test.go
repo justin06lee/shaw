@@ -1,0 +1,82 @@
+package tui
+
+import (
+	"testing"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/justin06lee/shaw/internal/run"
+)
+
+// fixedSource is a WordSource that returns the same word forever, so model
+// tests need no filesystem.
+type fixedSource struct{ word string }
+
+func (f fixedSource) Next() (string, bool) { return f.word, true }
+
+func keyMsg(s string) tea.KeyMsg {
+	return tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(s)}
+}
+
+func newModel() Model {
+	return New(fixedSource{word: "alpha"}, run.ModeTime, 30, 80, 24)
+}
+
+func TestModelStartsIdle(t *testing.T) {
+	m := newModel()
+	if m.State() != StateIdle {
+		t.Errorf("got %v, want StateIdle", m.State())
+	}
+}
+
+func TestConfigBarChangesModeWhenIdle(t *testing.T) {
+	m := newModel()
+	// Right arrow on the mode control moves time -> words.
+	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyRight})
+	m = updated.(Model)
+	if m.Mode() != run.ModeWords {
+		t.Errorf("got mode %v, want ModeWords", m.Mode())
+	}
+}
+
+func TestTypingTransitionsToActive(t *testing.T) {
+	m := newModel()
+	updated, _ := m.Update(keyMsg("a")) // first char of "alpha"
+	m = updated.(Model)
+	if m.State() != StateActive {
+		t.Errorf("got %v, want StateActive", m.State())
+	}
+}
+
+func TestConfigBarIgnoredWhileActive(t *testing.T) {
+	m := newModel()
+	updated, _ := m.Update(keyMsg("a")) // -> active
+	m = updated.(Model)
+	updated, _ = m.Update(tea.KeyMsg{Type: tea.KeyRight}) // arrow ignored
+	m = updated.(Model)
+	if m.Mode() != run.ModeTime {
+		t.Errorf("mode changed during active run: got %v", m.Mode())
+	}
+}
+
+func TestEscDuringActiveReturnsToIdle(t *testing.T) {
+	m := newModel()
+	updated, _ := m.Update(keyMsg("a"))
+	m = updated.(Model)
+	updated, _ = m.Update(tea.KeyMsg{Type: tea.KeyEsc})
+	m = updated.(Model)
+	if m.State() != StateIdle {
+		t.Errorf("got %v, want StateIdle after Esc", m.State())
+	}
+}
+
+func TestWordsRunReachingGoalShowsResult(t *testing.T) {
+	// 1-word target "alpha": typing all 5 chars correctly hits the goal.
+	m := New(fixedSource{word: "alpha"}, run.ModeWords, 1, 80, 24)
+	for _, ch := range "alpha" {
+		updated, _ := m.Update(keyMsg(string(ch)))
+		m = updated.(Model)
+	}
+	if m.State() != StateResult {
+		t.Errorf("got %v, want StateResult", m.State())
+	}
+}
