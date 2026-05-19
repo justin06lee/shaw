@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -138,5 +139,36 @@ func TestPerSecondInstantWPM(t *testing.T) {
 	// Second 2: 2 chars => 2/5*60 = 24 WPM.
 	if got[1] != 24 {
 		t.Errorf("instant sample 1: got %v, want 24", got[1])
+	}
+}
+
+func TestRenderChartDimensions(t *testing.T) {
+	out := RenderChart([]float64{1, 5, 3, 8, 2}, 20, 5)
+	lines := strings.Split(out, "\n")
+	if len(lines) != 5 {
+		t.Fatalf("got %d lines, want 5", len(lines))
+	}
+	for i, ln := range lines {
+		if len([]rune(ln)) != 20 {
+			t.Errorf("line %d width: got %d, want 20", i, len([]rune(ln)))
+		}
+	}
+}
+
+func TestRenderChartEmptyIsBlank(t *testing.T) {
+	out := RenderChart(nil, 10, 3)
+	for _, ln := range strings.Split(out, "\n") {
+		if strings.TrimSpace(ln) != "" {
+			t.Errorf("expected blank chart, got %q", ln)
+		}
+	}
+}
+
+func TestRenderChartPlotsPeak(t *testing.T) {
+	// The tallest bar should reach the top row.
+	out := RenderChart([]float64{0, 10, 0}, 3, 4)
+	top := strings.Split(out, "\n")[0]
+	if !strings.Contains(top, "█") {
+		t.Errorf("peak not plotted in top row: %q", top)
 	}
 }

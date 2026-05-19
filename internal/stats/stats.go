@@ -4,6 +4,7 @@ package stats
 import (
 	"math"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/justin06lee/shaw/internal/run"
@@ -155,4 +156,35 @@ func rankMisses(misses map[rune]int) []CharCount {
 		out = out[:missCap]
 	}
 	return out
+}
+
+// RenderChart draws samples as a vertical bar chart of the given width and
+// height (in terminal cells). Samples are resampled to fit width columns.
+func RenderChart(samples []float64, width, height int) string {
+	rows := make([][]rune, height)
+	for i := range rows {
+		rows[i] = []rune(strings.Repeat(" ", width))
+	}
+	if len(samples) > 0 && width > 0 && height > 0 {
+		max := 0.0
+		for _, s := range samples {
+			if s > max {
+				max = s
+			}
+		}
+		if max > 0 {
+			for col := 0; col < width; col++ {
+				idx := col * len(samples) / width
+				barHeight := int(math.Round(samples[idx] / max * float64(height)))
+				for row := 0; row < barHeight && row < height; row++ {
+					rows[height-1-row][col] = '█'
+				}
+			}
+		}
+	}
+	out := make([]string, height)
+	for i, r := range rows {
+		out[i] = string(r)
+	}
+	return strings.Join(out, "\n")
 }
