@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -152,5 +151,4 @@ func TestFinishWritesHistory(t *testing.T) {
 	if len(recs) != 1 {
 		t.Fatalf("got %d history records, want 1", len(recs))
 	}
-	_ = filepath.Separator // keep filepath import used if trimmed
 }
