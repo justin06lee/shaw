@@ -1,0 +1,30 @@
+# Build artifacts
+/shaw
+/dist/
+*.exe
+*.test
+*.out
+
+# Go coverage and profiles
+coverage.out
+*.cover
+cpu.prof
+mem.prof
+
+# Local dev / scratch
+/tmp/
+/scratch/
+*.local
+
+# Editor and OS junk
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Worktrees created by tooling
+/.claude/worktrees/
+/.worktrees/
