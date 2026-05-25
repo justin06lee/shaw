@@ -9,7 +9,26 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
+	"time"
 )
+
+// maxDownloadBytes caps the size of a downloaded asset so a hostile or broken
+// asset cannot fill the disk. It is a var (not const) so tests can override it.
+var maxDownloadBytes int64 = 200 << 20 // 200 MiB
+
+// httpClient has a timeout so a hung server cannot block forever.
+var httpClient = &http.Client{Timeout: 60 * time.Second}
+
+// validComponent rejects anything that isn't a single, safe path element, so a
+// malicious registry entry cannot escape KALAMA_HOME via name/binary.
+func validComponent(s string) error {
+	if s == "" || s == "." || s == ".." ||
+		strings.ContainsAny(s, `/\`) || filepath.Base(s) != s {
+		return fmt.Errorf("invalid path component %q", s)
+	}
+	return nil
+}
 
 type Manifest struct {
 	Name        string `json:"name"`
@@ -43,6 +62,12 @@ func GamesDir() (string, error) {
 // writes manifest.json next to it. The download is atomic (temp file + rename)
 // and a non-2xx HTTP status is an error. Creates directories as needed.
 func Install(m Manifest, assetURL string) error {
+	if err := validComponent(m.Name); err != nil {
+		return err
+	}
+	if err := validComponent(m.Binary); err != nil {
+		return err
+	}
 	gamesDir, err := GamesDir()
 	if err != nil {
 		return err
@@ -52,7 +77,7 @@ func Install(m Manifest, assetURL string) error {
 		return err
 	}
 
-	resp, err := http.Get(assetURL)
+	resp, err := httpClient.Get(assetURL)
 	if err != nil {
 		return err
 	}
@@ -68,9 +93,14 @@ func Install(m Manifest, assetURL string) error {
 	tmpName := tmp.Name()
 	defer os.Remove(tmpName) // no-op after successful rename
 
-	if _, err := io.Copy(tmp, resp.Body); err != nil {
+	n, err := io.Copy(tmp, io.LimitReader(resp.Body, maxDownloadBytes+1))
+	if err != nil {
 		tmp.Close()
 		return err
+	}
+	if n > maxDownloadBytes {
+		tmp.Close()
+		return fmt.Errorf("download exceeds %d bytes", maxDownloadBytes)
 	}
 	if err := tmp.Close(); err != nil {
 		return err
@@ -93,6 +123,9 @@ func Install(m Manifest, assetURL string) error {
 
 // Remove deletes GamesDir()/name. Removing a non-installed game is not an error.
 func Remove(name string) error {
+	if err := validComponent(name); err != nil {
+		return err
+	}
 	gamesDir, err := GamesDir()
 	if err != nil {
 		return err
@@ -137,6 +170,9 @@ func List() ([]Manifest, error) {
 // BinaryPath returns the absolute path to an installed game's executable,
 // erroring if the game is not installed.
 func BinaryPath(name string) (string, error) {
+	if err := validComponent(name); err != nil {
+		return "", err
+	}
 	gamesDir, err := GamesDir()
 	if err != nil {
 		return "", err
@@ -149,6 +185,9 @@ func BinaryPath(name string) (string, error) {
 	var m Manifest
 	if err := json.Unmarshal(data, &m); err != nil {
 		return "", fmt.Errorf("%s: corrupt manifest: %w", name, err)
+	}
+	if err := validComponent(m.Binary); err != nil {
+		return "", fmt.Errorf("%s: %w", name, err)
 	}
 	binPath := filepath.Join(dir, m.Binary)
 	if _, err := os.Stat(binPath); err != nil {

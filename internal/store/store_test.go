@@ -117,3 +117,67 @@ func TestBinaryPathNotInstalled(t *testing.T) {
 		t.Error("BinaryPath for non-installed = nil error, want error")
 	}
 }
+
+func TestInstallRejectsTraversalName(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("KALAMA_HOME", home)
+	srv := serveBinary(t)
+	defer srv.Close()
+
+	m := Manifest{Name: "../../evil", Version: "1.0.0", Binary: "x"}
+	if err := Install(m, srv.URL); err == nil {
+		t.Fatal("Install with traversal name = nil error, want error")
+	}
+	// Nothing should have been created outside the home (in its parent).
+	if _, err := os.Stat(filepath.Join(filepath.Dir(home), "evil")); !os.IsNotExist(err) {
+		t.Errorf("escaped path created: %v", err)
+	}
+}
+
+func TestInstallRejectsTraversalBinary(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("KALAMA_HOME", home)
+	srv := serveBinary(t)
+	defer srv.Close()
+
+	m := Manifest{Name: "luma", Version: "1.0.0", Binary: "../../evil"}
+	if err := Install(m, srv.URL); err == nil {
+		t.Fatal("Install with traversal binary = nil error, want error")
+	}
+	if _, err := os.Stat(filepath.Join(filepath.Dir(home), "evil")); !os.IsNotExist(err) {
+		t.Errorf("escaped path created: %v", err)
+	}
+}
+
+func TestRemoveRejectsTraversal(t *testing.T) {
+	t.Setenv("KALAMA_HOME", t.TempDir())
+	if err := Remove("../../etc"); err == nil {
+		t.Error("Remove with traversal = nil error, want error")
+	}
+}
+
+func TestInstallRejectsOversizedDownload(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("KALAMA_HOME", home)
+
+	orig := maxDownloadBytes
+	maxDownloadBytes = 16
+	defer func() { maxDownloadBytes = orig }()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write(make([]byte, 32)) // more than maxDownloadBytes
+	}))
+	defer srv.Close()
+
+	m := Manifest{Name: "luma", Version: "1.0.0", Binary: "luma"}
+	if err := Install(m, srv.URL); err == nil {
+		t.Fatal("Install with oversized download = nil error, want error")
+	}
+	gamesDir, err := GamesDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(gamesDir, "luma", "luma")); !os.IsNotExist(err) {
+		t.Errorf("installed binary left behind after oversized download: %v", err)
+	}
+}

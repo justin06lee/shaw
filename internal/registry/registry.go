@@ -7,7 +7,11 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 )
+
+// httpClient has a timeout so a hung registry server cannot block forever.
+var httpClient = &http.Client{Timeout: 60 * time.Second}
 
 type Game struct {
 	Name        string            `json:"name"`
@@ -38,7 +42,7 @@ func Fetch() (*Index, error) {
 
 // FetchFrom GETs and parses the index from a specific url (non-2xx -> error).
 func FetchFrom(url string) (*Index, error) {
-	resp, err := http.Get(url)
+	resp, err := httpClient.Get(url)
 	if err != nil {
 		return nil, err
 	}
