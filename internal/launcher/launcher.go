@@ -20,6 +20,22 @@ func Exec(binPath string) error {
 	return c.Run()
 }
 
+// loadBanners fetches each game's --banner art (best-effort; failures are
+// silently skipped so the card falls back to the default banner).
+func loadBanners(games []store.Manifest) map[string]string {
+	banners := make(map[string]string, len(games))
+	for _, g := range games {
+		bp, err := store.BinaryPath(g.Name)
+		if err != nil {
+			continue
+		}
+		if art, err := bannerFetch(bp); err == nil {
+			banners[g.Name] = art
+		}
+	}
+	return banners
+}
+
 // Play launches a game. If name != "", it execs that installed game directly.
 // Otherwise it shows the launcher UI, then execs the chosen game (or returns nil
 // if the user quit without choosing).
@@ -37,7 +53,7 @@ func Play(name string) error {
 		return err
 	}
 
-	p := tea.NewProgram(NewModel(games, nil))
+	p := tea.NewProgram(NewModel(games, loadBanners(games)), tea.WithAltScreen())
 	final, err := p.Run()
 	if err != nil {
 		return err

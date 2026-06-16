@@ -112,3 +112,24 @@ func TestScrollKeepsFocusedRowVisible(t *testing.T) {
 		t.Errorf("focused row %d not in [%d,%d)", focusedRow, m.scroll, m.scroll+vis)
 	}
 }
+
+func TestProgramRendersAndQuits(t *testing.T) {
+	// stub banner fetch so no real binary is exec'd
+	orig := bannerFetch
+	bannerFetch = func(string) (string, error) { return "PIXELART", nil }
+	defer func() { bannerFetch = orig }()
+
+	m := size(NewModel(games(4), map[string]string{"ga": "PIXELART"}), 100, 40)
+	// drive: enter grid, move right, down, back to sidebar, to store, quit
+	for _, k := range []string{"l", "l", "j", "h", "h", "j", "enter"} {
+		m = key(m, k)
+	}
+	// landed on Store via sidebar enter (no grid), so nothing chosen yet; quit
+	m = key(m, "q")
+	if !m.Quitting() {
+		t.Fatal("expected quitting after q")
+	}
+	if out := m.View(); out == "" {
+		t.Fatal("view rendered empty")
+	}
+}
