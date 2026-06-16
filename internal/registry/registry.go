@@ -27,9 +27,9 @@ type Index struct {
 
 const DefaultURL = "https://raw.githubusercontent.com/justin06lee/hegale/master/index.json"
 
-// URL returns the registry index URL: $KALAMA_REGISTRY if set, else DefaultURL.
+// URL returns the registry index URL: $SHAW_REGISTRY if set, else DefaultURL.
 func URL() string {
-	if u := os.Getenv("KALAMA_REGISTRY"); u != "" {
+	if u := os.Getenv("SHAW_REGISTRY"); u != "" {
 		return u
 	}
 	return DefaultURL

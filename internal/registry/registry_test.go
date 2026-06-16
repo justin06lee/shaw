@@ -57,13 +57,13 @@ func TestAssetURL(t *testing.T) {
 
 func TestURL(t *testing.T) {
 	t.Run("env override", func(t *testing.T) {
-		t.Setenv("KALAMA_REGISTRY", "https://custom.example.com/index.json")
+		t.Setenv("SHAW_REGISTRY", "https://custom.example.com/index.json")
 		if got := URL(); got != "https://custom.example.com/index.json" {
 			t.Errorf("URL() = %q", got)
 		}
 	})
 	t.Run("default", func(t *testing.T) {
-		t.Setenv("KALAMA_REGISTRY", "")
+		t.Setenv("SHAW_REGISTRY", "")
 		if got := URL(); got != DefaultURL {
 			t.Errorf("URL() = %q, want default %q", got, DefaultURL)
 		}

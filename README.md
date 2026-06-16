@@ -1,64 +1,58 @@
-# kalama
+# shaw
 
-The package manager and launcher for the
-[shaw](https://github.com/justin06lee/shaw) terminal arcade engine.
+The launcher and package manager for the shaw terminal arcade. Type `shaw` to
+pick a game and play; install more with `shaw install`.
 
-`kalama` installs, removes, lists, and launches games for the shaw arcade. It
-pulls games from the [hegale](https://github.com/justin06lee/hegale) registry and
-drops the matching per-OS binary plus a `manifest.json` into
-`~/.kalama/games/<game>/`, so you only download the games you want and can delete
-them anytime.
+Games are built on the [kalama](https://github.com/justin06lee/kalama) engine and
+pulled from the [hegale](https://github.com/justin06lee/hegale) registry. shaw
+drops the matching per-OS binary plus a `manifest.json` into `~/.shaw/games/<game>/`.
 
 ## Install
 
 ```
-go install github.com/justin06lee/kalama/cmd/kalama@latest
+go install github.com/justin06lee/shaw/cmd/shaw@latest
 ```
 
 ## Quickstart
 
 ```
-kalama install luma   # download and install the luma game
-kalama play           # pick a game from the menu and play
+shaw install snake.shaw   # download and install the snake game
+shaw                      # open the menu and play
 ```
 
 ## Commands
 
 ```
-kalama install <game>   fetch from hegale and install to ~/.kalama/games/<game>/
-kalama remove  <game>   delete an installed game
-kalama list             list installed games
-kalama play [game]      launch a game directly, or show a menu of installed games
-kalama help             show usage
+shaw                    open the game menu
+shaw install <game>     fetch from hegale and install to ~/.shaw/games/<game>/
+shaw remove  <game>     delete an installed game
+shaw list               list installed games
+shaw play [game]        launch a game directly, or open the menu
+shaw help               show usage
 ```
 
-In the `play` menu: `↑`/`↓` (or `k`/`j`) move, `enter` plays the highlighted
-game, `q`/`esc` quits without playing.
+In the menu: `↑`/`↓` (or `k`/`j`) move, `enter` plays the highlighted game,
+`q`/`esc` quits. Games are listed by their friendly name (the `.shaw` suffix is
+hidden), e.g. `snake.shaw` shows as `snake`.
 
 ## Environment
 
-| Variable          | Default                           | Purpose                   |
-| ----------------- | --------------------------------- | ------------------------- |
-| `KALAMA_HOME`     | `~/.kalama`                       | where games are installed |
-| `KALAMA_REGISTRY` | the hegale `index.json` on GitHub | registry index URL        |
+| Variable        | Default                           | Purpose                   |
+| --------------- | --------------------------------- | ------------------------- |
+| `SHAW_HOME`     | `~/.shaw`                         | where games are installed |
+| `SHAW_REGISTRY` | the hegale `index.json` on GitHub | registry index URL        |
 
 ## Install layout
 
-Each installed game lives in its own directory under `KALAMA_HOME`:
-
 ```
-~/.kalama/
+~/.shaw/
   games/
-    luma/
+    snake.shaw/
       manifest.json   {"name","description","version","binary"}
-      luma            the executable (chmod 0755)
+      snake.shaw      the executable (chmod 0755)
 ```
-
-`kalama` reads the hegale registry index, picks the asset matching your
-`GOOS/GOARCH`, downloads it atomically (temp file + rename), and records the
-manifest alongside the binary.
 
 ## Related
 
-- [shaw](https://github.com/justin06lee/shaw) — the arcade engine games are built on.
-- [hegale](https://github.com/justin06lee/hegale) — the registry kalama pulls games from.
+- [kalama](https://github.com/justin06lee/kalama) — the engine games are built on.
+- [hegale](https://github.com/justin06lee/hegale) — the registry shaw pulls games from.

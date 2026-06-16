@@ -1,4 +1,4 @@
-// Command kalama is the package manager and launcher for the shaw terminal arcade.
+// Command shaw is the launcher and package manager for the shaw terminal arcade.
 package main
 
 import (
@@ -6,36 +6,36 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/justin06lee/kalama/internal/launcher"
-	"github.com/justin06lee/kalama/internal/registry"
-	"github.com/justin06lee/kalama/internal/store"
+	"github.com/justin06lee/shaw/internal/launcher"
+	"github.com/justin06lee/shaw/internal/registry"
+	"github.com/justin06lee/shaw/internal/store"
 )
 
-const usage = `kalama — package manager and launcher for the shaw terminal arcade
+const usage = `shaw — launcher and package manager for the shaw terminal arcade
 
 Usage:
-  kalama install <game>   fetch from hegale and install to ~/.kalama/games/<game>/
-  kalama remove  <game>   delete an installed game
-  kalama list             list installed games
-  kalama play [game]      launch a game (menu if no name given)
-  kalama help             show this help
+  shaw                    open the game menu
+  shaw install <game>     fetch from hegale and install to ~/.shaw/games/<game>/
+  shaw remove  <game>     delete an installed game
+  shaw list               list installed games
+  shaw play [game]        launch a game directly, or open the menu
+  shaw help               show this help
 
 Environment:
-  KALAMA_HOME      install location (default ~/.kalama)
-  KALAMA_REGISTRY  registry index URL (default hegale on GitHub)
+  SHAW_HOME      install location (default ~/.shaw)
+  SHAW_REGISTRY  registry index URL (default hegale on GitHub)
 `
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
-		fmt.Fprintf(os.Stderr, "kalama: %v\n", err)
+		fmt.Fprintf(os.Stderr, "shaw: %v\n", err)
 		os.Exit(1)
 	}
 }
 
 func run(args []string) error {
 	if len(args) == 0 {
-		fmt.Print(usage)
-		return nil
+		return launcher.Play("")
 	}
 
 	switch args[0] {

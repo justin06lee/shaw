@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/justin06lee/kalama/internal/store"
+	"github.com/justin06lee/shaw/internal/store"
 )
 
 // Model is the launcher menu (pure, testable). ↑/↓ move; enter selects; q/esc quit.
@@ -54,7 +54,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	if len(m.games) == 0 {
-		return "no games installed — try: kalama install luma\n"
+		return "no games installed — try: shaw install snake.shaw\n"
 	}
 	var b strings.Builder
 	b.WriteString("shaw arcade — pick a game\n\n")
@@ -63,11 +63,15 @@ func (m Model) View() string {
 		if i == m.cursor {
 			marker = "> "
 		}
-		fmt.Fprintf(&b, "%s%s  %s\n", marker, g.Name, g.Description)
+		fmt.Fprintf(&b, "%s%s  %s\n", marker, displayName(g.Name), g.Description)
 	}
 	b.WriteString("\n↑/↓ move · enter play · q quit\n")
 	return b.String()
 }
+
+// displayName is the friendly name shown in the menu: the install id without
+// the .shaw suffix (e.g. "snake.shaw" -> "snake").
+func displayName(id string) string { return strings.TrimSuffix(id, ".shaw") }
 
 // Accessors for tests/driver:
 func (m Model) Cursor() int    { return m.cursor }

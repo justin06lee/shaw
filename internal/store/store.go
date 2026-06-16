@@ -1,4 +1,4 @@
-// Package store manages locally installed games under KALAMA_HOME (~/.kalama).
+// Package store manages locally installed games under SHAW_HOME (~/.shaw).
 package store
 
 import (
@@ -21,7 +21,7 @@ var maxDownloadBytes int64 = 200 << 20 // 200 MiB
 var httpClient = &http.Client{Timeout: 60 * time.Second}
 
 // validComponent rejects anything that isn't a single, safe path element, so a
-// malicious registry entry cannot escape KALAMA_HOME via name/binary.
+// malicious registry entry cannot escape SHAW_HOME via name/binary.
 func validComponent(s string) error {
 	if s == "" || s == "." || s == ".." ||
 		strings.ContainsAny(s, `/\`) || filepath.Base(s) != s {
@@ -37,16 +37,16 @@ type Manifest struct {
 	Binary      string `json:"binary"`
 }
 
-// Home returns $KALAMA_HOME or ~/.kalama.
+// Home returns $SHAW_HOME or ~/.shaw.
 func Home() (string, error) {
-	if h := os.Getenv("KALAMA_HOME"); h != "" {
+	if h := os.Getenv("SHAW_HOME"); h != "" {
 		return h, nil
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".kalama"), nil
+	return filepath.Join(home, ".shaw"), nil
 }
 
 // GamesDir returns Home()/games.

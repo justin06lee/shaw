@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/justin06lee/kalama/internal/store"
+	"github.com/justin06lee/shaw/internal/store"
 )
 
 func twoGames() []store.Manifest {

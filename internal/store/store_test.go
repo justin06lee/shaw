@@ -18,7 +18,7 @@ func serveBinary(t *testing.T) *httptest.Server {
 }
 
 func TestInstallListBinaryPathRemove(t *testing.T) {
-	t.Setenv("KALAMA_HOME", t.TempDir())
+	t.Setenv("SHAW_HOME", t.TempDir())
 	srv := serveBinary(t)
 	defer srv.Close()
 
@@ -81,7 +81,7 @@ func TestInstallListBinaryPathRemove(t *testing.T) {
 }
 
 func TestInstall404(t *testing.T) {
-	t.Setenv("KALAMA_HOME", t.TempDir())
+	t.Setenv("SHAW_HOME", t.TempDir())
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "nope", http.StatusNotFound)
 	}))
@@ -94,14 +94,14 @@ func TestInstall404(t *testing.T) {
 }
 
 func TestRemoveNonInstalled(t *testing.T) {
-	t.Setenv("KALAMA_HOME", t.TempDir())
+	t.Setenv("SHAW_HOME", t.TempDir())
 	if err := Remove("ghost"); err != nil {
 		t.Errorf("Remove non-installed = %v, want nil", err)
 	}
 }
 
 func TestListMissingDir(t *testing.T) {
-	t.Setenv("KALAMA_HOME", t.TempDir())
+	t.Setenv("SHAW_HOME", t.TempDir())
 	mf, err := List()
 	if err != nil {
 		t.Fatalf("List on missing games dir: %v", err)
@@ -112,7 +112,7 @@ func TestListMissingDir(t *testing.T) {
 }
 
 func TestBinaryPathNotInstalled(t *testing.T) {
-	t.Setenv("KALAMA_HOME", t.TempDir())
+	t.Setenv("SHAW_HOME", t.TempDir())
 	if _, err := BinaryPath("ghost"); err == nil {
 		t.Error("BinaryPath for non-installed = nil error, want error")
 	}
@@ -120,7 +120,7 @@ func TestBinaryPathNotInstalled(t *testing.T) {
 
 func TestInstallRejectsTraversalName(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("KALAMA_HOME", home)
+	t.Setenv("SHAW_HOME", home)
 	srv := serveBinary(t)
 	defer srv.Close()
 
@@ -136,7 +136,7 @@ func TestInstallRejectsTraversalName(t *testing.T) {
 
 func TestInstallRejectsTraversalBinary(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("KALAMA_HOME", home)
+	t.Setenv("SHAW_HOME", home)
 	srv := serveBinary(t)
 	defer srv.Close()
 
@@ -150,7 +150,7 @@ func TestInstallRejectsTraversalBinary(t *testing.T) {
 }
 
 func TestRemoveRejectsTraversal(t *testing.T) {
-	t.Setenv("KALAMA_HOME", t.TempDir())
+	t.Setenv("SHAW_HOME", t.TempDir())
 	if err := Remove("../../etc"); err == nil {
 		t.Error("Remove with traversal = nil error, want error")
 	}
@@ -158,7 +158,7 @@ func TestRemoveRejectsTraversal(t *testing.T) {
 
 func TestInstallRejectsOversizedDownload(t *testing.T) {
 	home := t.TempDir()
-	t.Setenv("KALAMA_HOME", home)
+	t.Setenv("SHAW_HOME", home)
 
 	orig := maxDownloadBytes
 	maxDownloadBytes = 16
