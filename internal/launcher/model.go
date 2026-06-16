@@ -157,17 +157,3 @@ func (m Model) Chosen() string { return m.chosen }
 
 // Quitting reports whether the program should exit.
 func (m Model) Quitting() bool { return m.quit }
-
-// View is a temporary stub so Model satisfies tea.Model and the package builds.
-// Task 4 replaces it with the real implementation in view.go (delete this stub then).
-func (m Model) View() string { return "" }
-
-// columns computes how many cards fit across the content area for a terminal width.
-// (Task 4 relocates this to view.go.)
-func columns(totalWidth int) int {
-	avail := totalWidth - sidebarW - 2
-	if avail < cardW {
-		return 1
-	}
-	return (avail + gap) / (cardW + gap)
-}
