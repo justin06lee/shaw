@@ -69,10 +69,6 @@ func (m Model) View() string {
 	return b.String()
 }
 
-// displayName is the friendly name shown in the menu: the install id without
-// the .shaw suffix (e.g. "snake.shaw" -> "snake").
-func displayName(id string) string { return strings.TrimSuffix(id, ".shaw") }
-
 // Accessors for tests/driver:
 func (m Model) Cursor() int    { return m.cursor }
 func (m Model) Chosen() string { return m.chosen }
